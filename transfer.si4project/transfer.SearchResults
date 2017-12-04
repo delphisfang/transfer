@@ -1,0 +1,4 @@
+---- m_userMap Matches (3 in 2 files) ----
+CMCDProc::InitCmdMap in transfer_mcd_proc.cpp : 	m_userMap["sendMsg"] = 1;	
+CMCDProc::HttpParseCmd in transfer_mcd_proc.cpp :         return m_userMap[cmd];
+transfer::CMCDProc in transfer_mcd_proc.h :           map<string, unsigned> m_userMap;
