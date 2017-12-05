@@ -16,7 +16,7 @@
 #include "debug.h"
 //#include "app_config.h"
 #include "txf_timer_info.h"
-#include "transfer_timer_info.h"
+//#include "transfer_timer_info.h"
 
 #include <time.h>
 

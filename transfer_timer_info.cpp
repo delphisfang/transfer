@@ -7,8 +7,7 @@ using namespace transfer;
 
 extern char BUF[DATA_BUF_SIZE];
 
-#if 0
-int SendMsgTimerInfo::do_next_step(string& req_data)
+int SendMsgTimer::do_next_step(string& req_data)
 {
     switch (m_cur_step)
     {
@@ -56,7 +55,7 @@ int SendMsgTimerInfo::do_next_step(string& req_data)
     }
 }
 
-int SendMsgTimerInfo::on_req_state_svr_get_cp_addr()
+int SendMsgTimer::on_req_state_svr_get_cp_addr()
 {
 	if (false)// get from cache
 	{
@@ -83,7 +82,7 @@ int SendMsgTimerInfo::on_req_state_svr_get_cp_addr()
 	}
 }
 
-int SendMsgTimerInfo::on_state_svr_error()
+int SendMsgTimer::on_state_svr_error()
 {
 	Json::Value data;
 	
@@ -94,7 +93,7 @@ int SendMsgTimerInfo::on_state_svr_error()
 }
 
 // parse data from state server
-int SendMsgTimerInfo::on_rsp_state_svr_get_cp_addr(string req_data, int datalen)
+int SendMsgTimer::on_rsp_state_svr_get_cp_addr(string req_data, int datalen)
 {
 	///TODO
 	//int retcode = parse_retcode(req_data);
@@ -102,9 +101,6 @@ int SendMsgTimerInfo::on_rsp_state_svr_get_cp_addr(string req_data, int datalen)
 	
 	if (retcode == 0)
 	{
-		m_session_ip   = xx;
-		m_session_port = xx;
-
 		///TODO
 		m_session_ip = "12.34.56.78";
 		m_session_port = 1234;
@@ -117,7 +113,7 @@ int SendMsgTimerInfo::on_rsp_state_svr_get_cp_addr(string req_data, int datalen)
 	}	
 }
 
-int SendMsgTimerInfo::on_req_cp_send_msg()
+int SendMsgTimer::on_req_cp_send_msg()
 {
 	Json::Value data;
 
@@ -125,12 +121,12 @@ int SendMsgTimerInfo::on_req_cp_send_msg()
 	data["appID"]     = m_appID;
 	data["userID"]    = m_userID;
 	data["serviceID"] = m_serviceID;
-	data["chatproxyIp"] = xxx;
-	data["chatproxyPort"] = yyy;
+	//data["chatproxyIp"] = xxx;
+	//data["chatproxyPort"] = yyy;
 	return on_send_request("replyCpAddr", m_chatproxyIP, m_chatproxyPort, data);
 }
 
-int SendMsgTimerInfo::on_rsp_cp_send_msg(string req_data, int datalen)
+int SendMsgTimer::on_rsp_cp_send_msg(string req_data, int datalen)
 {
 	int retcode = 0;
 	//int retcode = parse_retcode(req_data);
@@ -149,14 +145,13 @@ int SendMsgTimerInfo::on_rsp_cp_send_msg(string req_data, int datalen)
 	}
 }
 
-// resp to cp
-int SendMsgTimerInfo::resp_cp_first()
+int SendMsgTimer::resp_cp_first()
 {
 	Json::Value data = Json::objectValue;
 	return on_send_reply(data);
 }
 
-void SendMsgTimerInfo::on_expire()
+void SendMsgTimer::on_expire()
 {
 	if (m_retry_times >= m_proc->m_cfg._trsf_max_retry_times)
 	{
@@ -172,9 +167,8 @@ void SendMsgTimerInfo::on_expire()
 	return;
 }
 
-
-SendMsgTimerInfo::~SendMsgTimerInfo()
+SendMsgTimer::~SendMsgTimer()
 {
 
 }
-#endif
+

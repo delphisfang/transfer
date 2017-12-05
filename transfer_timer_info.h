@@ -12,12 +12,9 @@ using namespace tfc;
 using namespace tfc::base;
 using namespace tfc::cache;
 
-#if 0
 namespace transfer
 {
-	class CMCDProc;
-	
-    class SendMsgTimerInfo: public CTimerInfo
+    class SendMsgTimer: public CTimerInfo
 	{
 	    public:
 		enum STATE
@@ -28,7 +25,7 @@ namespace transfer
 	        STATE_END       = 255,
 	    };
 			
-	    SendMsgTimerInfo(CMCDProc* const proc
+	    SendMsgTimer(CMCDProc* const proc
 	                  , unsigned msg_seq
 	                  , const timeval& ccd_time
 	                  , string ccd_client_ip
@@ -39,13 +36,17 @@ namespace transfer
 	    	m_expire_del  = false;
 			m_retry_times = 0;
 	    }
-	    ~SendMsgTimerInfo();
+	    ~SendMsgTimer();
 
 	    int do_next_step(string& req_data);
+
 	    int on_req_cp_send_msg();
 		int on_rsp_cp_send_msg(string req_data, int datalen);
+
 		int on_req_state_svr_get_cp_addr();
+		int on_state_svr_error();
 		int on_rsp_state_svr_get_cp_addr(string req_data, int datalen);
+
 		int resp_cp_first();
 		virtual void on_expire();
 	    virtual bool on_expire_delete(){ return m_expire_del; }
@@ -59,6 +60,5 @@ namespace transfer
 		unsigned short m_session_port;
 	};
 }
-#endif
 
 #endif
