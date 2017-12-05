@@ -7,7 +7,7 @@ using namespace transfer;
 
 extern char BUF[DATA_BUF_SIZE];
 
-
+#if 0
 int SendMsgTimerInfo::do_next_step(string& req_data)
 {
     switch (m_cur_step)
@@ -177,4 +177,4 @@ SendMsgTimerInfo::~SendMsgTimerInfo()
 {
 
 }
-
+#endif

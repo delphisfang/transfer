@@ -18,7 +18,7 @@ namespace transfer
 {
         const unsigned DATA_BUF_SIZE = 1024 * 1024 * 32;
 
-        class CMCDProc;
+		class CMCDProc;
 
         class CTimerInfo : public tfc::base::CFastTimerInfo
         {   
@@ -83,81 +83,15 @@ namespace transfer
             virtual void on_expire();
             virtual bool on_expire_delete(){ return true; }           
 
-			void on_error_parse_packet(string errmsg)
-            {
-                m_errno  = ERROR_UNKNOWN_PACKET;
-                m_errmsg = errmsg;
-    			on_error();
-			}
+			void on_error_parse_packet(string errmsg);
 
-			int on_send_request(string cmd, string ip, unsigned short port, const Json::Value &data, bool with_code = false)
-            {
-				Json::Value req;
-				req["appID"]	= m_appID;
-				req["method"]	= cmd;
-				req["innerSeq"] = m_msg_seq;
-				req["data"] 	= data;
-				if (with_code)
-					req["code"] = 0;
-				string strReq   = req.toStyledString();
-				LogTrace("send request to <%s, %d>: %s", ip.c_str(), port, strReq.c_str());
-				if (m_proc->EnququeHttp2DCC((char *)strReq.c_str(), strReq.size(), ip, port))
-				{
-					LogError("[%s]: Error send request %s", m_appID.c_str(), cmd.c_str());
-					return -1;
-				}
-				return 0;
-			}
+			int on_send_request(string cmd, string ip, unsigned short port, const Json::Value &data, bool with_code = false);
 
-			int on_send_reply(const Json::Value &data)
-            {
-				Json::Value rsp;
-				rsp["appID"]	= m_appID;
-				rsp["method"]	= m_cmd + "-reply";
-				rsp["innerSeq"] = m_seq;
-				rsp["code"] 	= 0;
-				rsp["data"] 	= data;
-				string strRsp   = rsp.toStyledString();
-				LogTrace("send response: %s", strRsp.c_str());
-				if (m_proc->EnququeHttp2CCD(m_ret_flow, (char *)strRsp.c_str(), strRsp.size()))
-				{
-					LogError("searchid[%s]: Fail to SendReply <%s>\n", m_search_no.c_str(), m_cmd.c_str());
-					m_errno  = ERROR_SYSTEM_WRONG;
-					m_errmsg = "Error send to ChatProxy";
-					on_error();
-					return -1;
-				}
-				else
-				{
-					on_stat();
-					return 0;
-				}
-			}
+			int on_send_reply(const Json::Value &data);
 
-            uint32_t GetMsgSeq() { return m_msg_seq; }
+            uint32_t GetMsgSeq();
 
-            uint64_t GetTimeGap()
-            {
-                struct timeval end;
-                gettimeofday(&end, NULL);
-
-                uint64_t timecost = CalcTimeCost_MS(m_start_time, end);
-				DEBUG_P(LOG_NORMAL, "##### Timer GetTimeGap() max_time_gap[%u], timecost[%u]\n"
-					            , m_max_time_gap, timecost);
-
-                if(timecost > m_max_time_gap)
-                {
-                    m_max_time_gap = 1;
-                }
-                else
-                {
-                    m_max_time_gap -= timecost;
-                }
-
-                // m_op_start = end;
-
-                return m_max_time_gap;
-            }
+            uint64_t GetTimeGap();
 
 		public:
 			int32_t         m_errno;

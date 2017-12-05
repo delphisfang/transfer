@@ -14,6 +14,7 @@
 #include "transfer_error.h"
 #include "water_log.h"
 
+#include "txf_timer_info.h"
 #include "transfer_timer_info.h"
 
 using namespace std;
@@ -506,7 +507,7 @@ int32_t CMCDProc::HandleRequest(char* data, unsigned data_len,
     switch (cmd)
     {
         case CP_SEND_MSG:
-            ti = new SendMsgTimerInfo(this, msg_seq, ccd_time, str_client_ip, flow, m_cfg._time_out);
+            //ti = new SendMsgTimerInfo(this, msg_seq, ccd_time, str_client_ip, flow, m_cfg._time_out);
             break;
 
         default:
