@@ -49,24 +49,11 @@ namespace transfer
                 m_identity.clear();
                 m_userID.clear();
                 m_serviceID.clear();
-                m_content.clear();
-                m_changeServiceID.clear();
-                m_lastServiceID.clear();
-                m_priority.clear();
-                m_ret_code.clear();
-                m_ret_msg.clear();
                 m_search_no.clear();
-
-	            m_tags.clear();
-                m_checkServices.clear();
-                m_queuePriority = 0;
             }
 
             virtual ~CTimerInfo()
             {
-                m_tags.clear();
-                m_checkServices.clear();
-                m_content.clear();
             }
 
             virtual int  do_next_step(string& req_data)=0;
@@ -82,6 +69,10 @@ namespace transfer
 
             virtual void on_expire();
             virtual bool on_expire_delete(){ return true; }           
+
+			string get_value_str(Json::Value &jv, const string &key, const string def_val = "");
+			unsigned int get_value_uint(Json::Value &jv, const string &key, const unsigned int def_val = 0);
+			int get_value_int(Json::Value &jv, const string &key, const int def_val = 0);
 
 			void on_error_parse_packet(string errmsg);
 
@@ -113,33 +104,15 @@ namespace transfer
 
             string          m_cmd;
             string          m_seq;
-            string          m_tag;
             timeval         m_cur_time;
 	        string          m_appID;
             string          m_data;
-            string          m_chatproxyIP;	//所连CP的IP地址
-            unsigned        m_chatproxyPort;//所连CP的端口
-            string          m_identity;//0-user,1-service
-            string          m_userID;//用户ID
-            string          m_serviceID;//坐席ID
-            string          m_sessionID;
-            Json::Value     m_content;
-            string          m_changeServiceID;
-            string          m_lastServiceID;
-            set<string>     m_tags;
-            set<string>     m_checkServices;
-            string          m_priority;
-            string          m_ret_code;
-            string          m_ret_msg;
+            string          m_cpIP;
+            unsigned        m_cpPort;
+            string          m_identity;
+            string          m_userID;
+            string          m_serviceID;
             string          m_search_no;
-            string          m_channel;
-            string          m_extends;
-            string          m_serviceName;
-            string          m_serviceAvatar;
-            string          m_whereFrom;
-            string          m_userInfo;
-            unsigned        m_queuePriority;
-            unsigned        m_userCount;
        };
 }
 #endif

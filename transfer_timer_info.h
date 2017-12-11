@@ -40,14 +40,15 @@ namespace transfer
 
 	    int do_next_step(string& req_data);
 
+		int resp_cp_first();
+
 	    int on_req_cp_send_msg();
 		int on_rsp_cp_send_msg(string req_data, int datalen);
 
-		int on_req_state_svr_get_cp_addr();
+		int on_req_state_svr();
 		int on_state_svr_error();
-		int on_rsp_state_svr_get_cp_addr(string req_data, int datalen);
+		int on_rsp_state_svr(string req_data, int datalen);
 
-		int resp_cp_first();
 		virtual void on_expire();
 	    virtual bool on_expire_delete(){ return m_expire_del; }
 
@@ -58,6 +59,7 @@ namespace transfer
 		// mid
 		string m_session_ip;
 		unsigned short m_session_port;
+		int m_state_svr_code;
 	};
 }
 

@@ -654,7 +654,7 @@ int32_t CMCDProc::HandleResponse(char* data,
 }
 
 								 
-#if 1
+#if 0
 
 int32_t CMCDProc::HandleResponseHttp(char* data,
                                  unsigned data_len,
@@ -680,7 +680,7 @@ void CMCDProc::DispatchDCCHttp()
         data_len = 0;
         ret = m_mq_dcc_2_mcd_http->try_dequeue(m_recv_buf, BUFF_SIZE, data_len, flow);
 
-        if (ret || data_len < DCC_HEADER_LEN)
+        if (ret || data_len < CCD_HEADER_LEN)
         {
             ++deal_count;
             continue;
@@ -691,11 +691,11 @@ void CMCDProc::DispatchDCCHttp()
 		dcc_time.tv_sec 	= dccheader->_timestamp;
 		dcc_time.tv_usec 	= dccheader->_timestamp_msec * 1000;
 
-        if (dcc_rsp_data != dccheader->_type)
+        if (ccd_rsp_data != dccheader->_type)
         {
             LogError("[DispatchCcd] ccdheader->_type invalid "
                     "expect: %d actual: %d down_ip: %s down_port:%d\n",
-                    dcc_rsp_data, dccheader->_type, INET_ntoa(down_ip).c_str(), down_port);
+                    ccd_rsp_data, dccheader->_type, INET_ntoa(down_ip).c_str(), down_port);
             ++deal_count;
             continue;
         }
@@ -774,9 +774,9 @@ int32_t CMCDProc::EnququeConfigHttp2DCC()
     char uri[4096] = {0};
     snprintf (uri,  4096, "GET /api/v2/configs/ping HTTP/1.1\r\nHost:%s\r\nUser-Agent:curl/7.45.0\r\nAccept:*/*\r\n\r\n", m_cfg._config_domin.c_str());
     unsigned msg_len = strlen(uri);
-    TDCCHeader* header = (TDCCHeader*)m_send_buf;
-    char* data_buff = m_send_buf + DCC_HEADER_LEN;
-    unsigned data_max = BUFF_SIZE- DCC_HEADER_LEN;
+    TCCDHeader* header = (TCCDHeader*)m_send_buf;
+    char* data_buff = m_send_buf + CCD_HEADER_LEN;
+    unsigned data_max = BUFF_SIZE- CCD_HEADER_LEN;
 
 	memcpy(data_buff, uri, msg_len);
 	data_buff += msg_len;
@@ -787,7 +787,7 @@ int32_t CMCDProc::EnququeConfigHttp2DCC()
     header->_ip = iip;
     header->_port = m_cfg._config_port;
 
-	int totallen = DCC_HEADER_LEN + msg_len;
+	int totallen = CCD_HEADER_LEN + msg_len;
     if (m_mq_mcd_2_dcc_http->enqueue(header, totallen, flow))
     {
         LogError("[EnququeConfigHttp2DCC] enqueue to DCC fail\n");
@@ -799,7 +799,7 @@ int32_t CMCDProc::EnququeConfigHttp2DCC()
     else
     {
         LogDebug("[EnququeConfigHttp2DCC] enqueue to DCC success, total_len:%d, ccd_header:%d\n"
-			   , totallen, DCC_HEADER_LEN);
+			   , totallen, CCD_HEADER_LEN);
         timeval nowTime;
 	    gettimeofday(&nowTime, NULL);
         CWaterLog::Instance()->WriteLog(nowTime, 1, (char *)m_cfg._config_ip.c_str(), m_cfg._config_port, 0, uri);
@@ -819,9 +819,9 @@ int32_t CMCDProc::EnququeHttp2DCC(char* data, unsigned data_len, const string& i
     //DEBUG_P(LOG_TRACE, "DCC send packet:%s\n", uri);
     unsigned msg_len = strlen(uri);
 
-	TDCCHeader* header = (TDCCHeader*)m_send_buf;
-    char* data_buff = m_send_buf + DCC_HEADER_LEN;
-    unsigned data_max = BUFF_SIZE- DCC_HEADER_LEN;
+	TCCDHeader* header = (TCCDHeader*)m_send_buf;
+    char* data_buff = m_send_buf + CCD_HEADER_LEN;
+    unsigned data_max = BUFF_SIZE- CCD_HEADER_LEN;
 
     if (data_len + msg_len > data_max)
     {
@@ -838,7 +838,7 @@ int32_t CMCDProc::EnququeHttp2DCC(char* data, unsigned data_len, const string& i
     header->_ip = iip;
     header->_port = port;
 
-	int totallen = DCC_HEADER_LEN + msg_len;
+	int totallen = CCD_HEADER_LEN + msg_len;
     if (m_mq_mcd_2_dcc_http->enqueue(header, totallen, flow))
     {
         LogError("[EnququeHttp2DCC] enqueue to DCC fail\n");
@@ -850,7 +850,7 @@ int32_t CMCDProc::EnququeHttp2DCC(char* data, unsigned data_len, const string& i
     else
     {
         LogDebug("[EnququeHttp2DCC] enqueue to DCC success, total_len:%d, ccd_header:%d\n"
-			   , totallen, DCC_HEADER_LEN);
+			   , totallen, CCD_HEADER_LEN);
         timeval nowTime;
 	    gettimeofday(&nowTime, NULL);
         CWaterLog::Instance()->WriteLog(nowTime, 1, (char *)ip.c_str(), port, 0, data);
@@ -873,9 +873,9 @@ int32_t CMCDProc::EnququeErrHttp2DCC(char* data, unsigned data_len)
 
     unsigned msg_len = strlen(uri);
 
-	TDCCHeader* header = (TDCCHeader*)m_send_buf;
-    char* data_buff = m_send_buf + DCC_HEADER_LEN;
-    unsigned data_max = BUFF_SIZE- DCC_HEADER_LEN;
+	TCCDHeader* header = (TCCDHeader*)m_send_buf;
+    char* data_buff = m_send_buf + CCD_HEADER_LEN;
+    unsigned data_max = BUFF_SIZE- CCD_HEADER_LEN;
 
     if (data_len + msg_len > data_max)
     {
@@ -892,7 +892,7 @@ int32_t CMCDProc::EnququeErrHttp2DCC(char* data, unsigned data_len)
     header->_ip = iip;
     header->_port = m_cfg._err_push_port;
 
-	int totallen = DCC_HEADER_LEN + msg_len;
+	int totallen = CCD_HEADER_LEN + msg_len;
     if (m_mq_mcd_2_dcc_http->enqueue(header, totallen, flow))
     {
         LogError("[EnququeErrHttp2DCC] enqueue to DCC fail\n");
@@ -904,7 +904,7 @@ int32_t CMCDProc::EnququeErrHttp2DCC(char* data, unsigned data_len)
     else
     {
         LogDebug("[EnququeErrHttp2DCC] enqueue to DCC success, total_len:%d, ccd_header:%d\n"
-			   , totallen, DCC_HEADER_LEN);
+			   , totallen, CCD_HEADER_LEN);
         timeval nowTime;
 	    gettimeofday(&nowTime, NULL);
         CWaterLog::Instance()->WriteLog(nowTime, 1, (char *)m_cfg._err_push_ip.c_str(), m_cfg._err_push_port, 0, data);

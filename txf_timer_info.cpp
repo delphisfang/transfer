@@ -7,42 +7,75 @@ using namespace transfer;
 
 extern char BUF[DATA_BUF_SIZE];
 
+string CTimerInfo::get_value_str(Json::Value &jv, const string &key, const string def_val)
+{
+	if (!jv[key].isNull() && jv[key].isString())
+	{
+		return jv[key].asString();
+	}
+	else
+	{
+		return def_val;
+	}
+}
+
+unsigned int CTimerInfo::get_value_uint(Json::Value &jv, const string &key, const unsigned int def_val)
+{
+	if (!jv[key].isNull() && jv[key].isUInt())
+	{
+		return jv[key].asUInt();
+	}
+	else
+	{
+		return def_val;
+	}
+}
+
+int CTimerInfo::get_value_int(Json::Value &jv, const string &key, const int def_val)
+{
+	if (!jv[key].isNull() && jv[key].isInt())
+	{
+		return jv[key].asInt();
+	}
+	else
+	{
+		return def_val;
+	}
+}
+	
 int CTimerInfo::init(string req_data, int datalen)
 {
 	Json::Reader reader;
 	Json::Value js_req_root;
 	Json::Value js_req_data;
 
-	if(!reader.parse(req_data, js_req_root))
+	if (!reader.parse(req_data, js_req_root))
 	{
 		LogError("Error init SerializeToString Fail: %s\n", req_data.c_str());
 		return -1;
 	}
-	if(!js_req_root["whereFrom"].isNull() && js_req_root["whereFrom"].isString())
+
+	if (!js_req_root["method"].isNull() && js_req_root["method"].isString())
 	{
-		m_whereFrom = js_req_root["whereFrom"].asString();
+		m_cmd = get_value_str(js_req_root, "method");
 	}
-	if(!js_req_root["cmd"].isNull() && js_req_root["cmd"].isString())
+	else
 	{
-		m_cmd = js_req_root["cmd"].asString();
+		m_cmd = get_value_str(js_req_root, "cmd");
 	}
-	if(!js_req_root["seq"].isNull() && js_req_root["seq"].isString())
-	{
-		m_seq = js_req_root["seq"].asString();
-	}
-	if(!js_req_root["appID"].isNull() && js_req_root["appID"].isUInt())
+
+	m_seq = get_value_uint(js_req_root, "innerSeq");
+
+	if (!js_req_root["appID"].isNull() && js_req_root["appID"].isString())
 	{
 		m_appID = js_req_root["appID"].asString();
 	}
-	if(!js_req_root["chatproxyIP"].isNull() && js_req_root["chatproxyIP"].isString())
+	else if (!js_req_root["appID"].isNull() && js_req_root["appID"].isUInt())
 	{
-		m_chatproxyIP = js_req_root["chatproxyIP"].asString();
+		m_appID = ui2str(js_req_root["appID"].asUInt());
 	}
-	if(!js_req_root["chatproxyPort"].isNull() && js_req_root["chatproxyPort"].isUInt())
-	{
-		m_chatproxyPort = js_req_root["chatproxyPort"].asUInt();
-	}
-	if(js_req_root["data"].isNull() || !js_req_root["data"].isObject())
+	
+	if (js_req_root["data"].isNull() || !js_req_root["data"].isObject())
 	{
 		m_search_no = m_appID + "_" + i2str(m_msg_seq);
 		return 0;
@@ -50,81 +83,12 @@ int CTimerInfo::init(string req_data, int datalen)
 	js_req_data = js_req_root["data"];
 	m_data = js_req_data.toStyledString();
 
-	if(!js_req_data["userInfo"].isNull() && js_req_data["userInfo"].isObject())
-	{
-		m_userInfo = js_req_data["userInfo"].toStyledString();
-	}
-	if(!js_req_data["identity"].isNull() && js_req_data["identity"].isString())
-	{
-		m_identity = js_req_data["identity"].asString();
-	}
-	if(!js_req_data["tag"].isNull() && js_req_data["tag"].isString())
-	{
-		m_tag = m_appID + "_" + js_req_data["tag"].asString();
-	}
-	if(!js_req_data["userID"].isNull() && js_req_data["userID"].isString())
-	{
-		m_userID = m_appID + "_" + js_req_data["userID"].asString();
-	}
-	if(!js_req_data["serviceID"].isNull() && js_req_data["serviceID"].isString())
-	{
-		m_serviceID = m_appID + "_" + js_req_data["serviceID"].asString();
-	}
-	if(!js_req_data["channel"].isNull() && js_req_data["channel"].isString())
-	{
-		m_channel = js_req_data["channel"].asString();
-	}
-	if(!js_req_data["extends"].isNull() && js_req_data["extends"].isObject())
-	{
-		m_extends = js_req_data["extends"].toStyledString();
-	}
-	if(!js_req_data["serviceName"].isNull() && js_req_data["serviceName"].isString())
-	{
-		m_serviceName = js_req_data["serviceName"].asString();
-	}
-	if(!js_req_data["serviceAvatar"].isNull() && js_req_data["serviceAvatar"].isString())
-	{
-		m_serviceAvatar = js_req_data["serviceAvatar"].asString();
-	}
-	if(!js_req_data["content"].isNull() && js_req_data["content"].isObject())
-	{
-		m_content = js_req_data["content"];
-	}
-	if(!js_req_data["changeServiceID"].isNull() && js_req_data["changeServiceID"].isString())
-	{
-		m_changeServiceID = m_appID + "_" + js_req_data["changeServiceID"].asString();
-	}
-	if(!js_req_data["lastServiceID"].isNull() && js_req_data["lastServiceID"].isString())
-	{
-		m_lastServiceID = m_appID + "_" + js_req_data["lastServiceID"].asString();
-	}
-	if(!js_req_data["priority"].isNull() && js_req_data["priority"].isUInt())
-	{
-		m_queuePriority = js_req_data["priority"].asUInt();
-	}
-	if(!js_req_data["tags"].isNull() && js_req_data["tags"].isArray())
-	{
-		Json::Value jsTags;
-		jsTags = js_req_data["tags"];
-		for(int i = 0; i < jsTags.size(); i++)
-		{
-			m_tags.insert(m_appID + "_" + jsTags[i].asString());
-		}
-	}
-	if(!js_req_data["priority"].isNull() && js_req_data["priority"].isString())
-	{
-		m_priority = js_req_data["priority"].asString();
-	}
-	if(!js_req_data["services"].isNull() && js_req_data["services"].isArray())
-	{
-		Json::Value services;
-		services = js_req_data["services"];
-		for(int i = 0; i < services.size(); i++)
-		{
-			m_checkServices.insert(m_appID + "_" + services[i].asString());
-		}
-	}
-
+	m_identity  = get_value_str(js_req_data, "identity");
+	m_userID    = get_value_str(js_req_data, "userID");
+	m_serviceID = get_value_str(js_req_data, "serviceID"); 
+	m_cpIP      = get_value_str(js_req_data, "chatProxyIp");
+	m_cpPort    = get_value_uint(js_req_data, "chatProxyPort");
+	
 	char id_buf[64];
     snprintf (id_buf, sizeof(id_buf), "%s:%s--%s:%d", m_appID.c_str(), m_serviceID.c_str(), m_userID.c_str(), m_msg_seq);
 	m_search_no = string(id_buf);
@@ -175,7 +139,7 @@ int CTimerInfo::on_error()
 
 		err_str = post_err.toStyledString();
 
-		DEBUG_P(LOG_NORMAL, "just test which line\n");
+		LogDebug("just test which line\n");
 
 		m_proc->EnququeErrHttp2DCC((char *)err_str.c_str(), err_str.size());
 	}
@@ -191,9 +155,9 @@ int CTimerInfo::on_stat()
 	m_proc->AddStat(m_errno, staticEntry.c_str(), &m_start_time, &m_end_time);
 
 	int32_t cur_errno = m_errno;
-	if(errno < 0)
+	if (errno < 0)
 	{
-		if(m_identity == "user")
+		if (m_identity == "user")
 		{
 			m_proc->AddErrCmdMsg(m_appID, m_cmd, m_identity, m_userID, m_start_time, cur_errno);
 		}
@@ -266,8 +230,7 @@ uint64_t CTimerInfo::GetTimeGap()
 	gettimeofday(&end, NULL);
 
 	uint64_t timecost = CalcTimeCost_MS(m_start_time, end);
-	DEBUG_P(LOG_NORMAL, "##### Timer GetTimeGap() max_time_gap[%u], timecost[%u]\n"
-					, m_max_time_gap, timecost);
+	LogDebug("##### Timer GetTimeGap() max_time_gap[%u], timecost[%u]\n", m_max_time_gap, timecost);
 
 	if (timecost > m_max_time_gap)
 	{
